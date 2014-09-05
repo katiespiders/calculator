@@ -1,5 +1,16 @@
 include Math
 
+def get_operator
+  operator = gets.chomp
+  operator = check_operator(operator)
+  while not operator
+    puts "I don't understand :( Try again?"
+    operator = gets.chomp
+    operator = check_operator(operator)
+  end
+  return operator
+end
+
 def check_operator(operator)
 
   # each operation is the key for a list of inputs that map to it
@@ -22,7 +33,6 @@ def check_operator(operator)
   end
   return nil # this function will continue to be called if input is not valid or quit
 end
-
 
 def calculate(operator, a, b=0) # set b to default 0 to account for sqrt taking only one argument
   case operator
@@ -52,8 +62,7 @@ def calculate(operator, a, b=0) # set b to default 0 to account for sqrt taking 
     puts "√#{a} = #{Math.sqrt(a)}"
     return Math.sqrt(a)
   else # This function is called after the operator check and should never be passed an invalid value
-    puts operator
-    abort "This error should never happen."
+    abort "Invalid argument #{operator} passed to calculate function"
   end
 end
 
@@ -66,15 +75,17 @@ def prompt_for_number
   return number
 end
 
+# distinguishes numeric input that evaluates to zero (0, 0.0, 0000) or nil
+# from non-numeric strings that also evaluate to zero
+# also distinguishes integer from float
 def process_input
   number = gets.chomp
-  is_zero = true
-  has_decimal = false
-
-  if number.downcase == 'q'
+  if number.downcase == 'q' or number.downcase == 'quit'
     abort "See you later, alligator!"
   end
 
+  is_zero = true
+  has_decimal = false
   number.split("").each do |char|
     if char != "0" and char != "."
       is_zero = false
@@ -90,8 +101,8 @@ def process_input
     else
       return 0
     end
-  elsif number.to_i == 0
-    return nil
+  elsif number.to_f == 0
+    return nil  # This function will continue to be called if input is not valid or quit
   elsif has_decimal
     return number.to_f
   else
@@ -99,19 +110,8 @@ def process_input
   end
 end
 
-def get_operator
-  operator = gets.chomp
-  operator = check_operator(operator)
-  while not operator
-    puts "I don't understand :( Try again?"
-    operator = gets.chomp
-    operator = check_operator(operator)
-  end
-  return operator
-end
-
-def do_math(operator, continuation=false, prev_answer = 0)
-  if not continuation
+def do_math(operator, continuation=false, prev_answer=0)
+  if not continuation # if this is the first operation carried out in the console
     if operator == :square_root
       puts "Square root of what?"
       number = prompt_for_number
@@ -123,7 +123,7 @@ def do_math(operator, continuation=false, prev_answer = 0)
       number2 = prompt_for_number
       calculate(operator, number1, number2)
     end
-  else
+  else  # if this is a subsequent operation in the console, in which case the result of the previous operation is passed in to this function
     if operator == :square_root
       calculate(operator, prev_answer)
     else
